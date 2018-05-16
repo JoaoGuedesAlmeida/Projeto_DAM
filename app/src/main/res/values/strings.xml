@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Projeto_DAM</string>
+    <string name="su_name">Name</string>
+    <string name="su_email">Email</string>
+    <string name="su_password">Password</string>
+    <string name="su_button">Create account</string>
+    <string name="w_button1">Create account</string>
+    <string name="log_out">Log Out</string>
+</resources>
