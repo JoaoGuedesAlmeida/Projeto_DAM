@@ -40,6 +40,7 @@ public class LoginActivity extends AppCompatActivity {
         // se os campos não estiverem vazios, chama a função para fazer o login
         if(!TextUtils.isEmpty(email) || !TextUtils.isEmpty(password)){
             loginUser(email, password);
+            System.out.println("TESTE");
         }
     }
 
