@@ -50,6 +50,9 @@ public class LoginActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()){
                     Intent mainIntent = new Intent(LoginActivity.this, MainActivity.class);
+                    //linha para garantir que o utilizador depois do login não volte atrás para uma activity
+                    //fora da zona do utilizador (welcome page ou login/registo)
+                    mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(mainIntent);
                     finish();
                 } else {

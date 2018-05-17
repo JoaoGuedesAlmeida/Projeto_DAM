@@ -13,6 +13,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
 
 
 public class SignUpActivity extends AppCompatActivity {
@@ -21,6 +26,7 @@ public class SignUpActivity extends AppCompatActivity {
     private TextInputLayout email;
     private TextInputLayout password;
     private FirebaseAuth mAuth;
+    private DatabaseReference db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,15 +54,41 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     // método para registar o utilizador (firebase)
-    private void registarUser(String nameT, String emailT, String passwordT) {
+    private void registarUser(final String nameT, String emailT, String passwordT) {
         mAuth.createUserWithEmailAndPassword(emailT, passwordT)
                 .addOnCompleteListener(SignUpActivity.this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            Intent mainIntent = new Intent(SignUpActivity.this, MainActivity.class);
-                            startActivity(mainIntent);
-                            finish();
+
+                            //temos que ir buscar o id do utilizador para guardar na nossa DB os dados do mesmo
+                            FirebaseUser utilizador = FirebaseAuth.getInstance().getCurrentUser();
+                            String user_id = utilizador.getUid();
+
+                            //vamos buscar à nossa db dentro dos utilizadores o id do nosso utilizador que fomos buscar em cima
+                            db = FirebaseDatabase.getInstance().getReference().child("Utilizadores").child(user_id);
+
+                            //gravar a informação sobre o utilizador num hashmap
+                            HashMap<String,String> infoUtilizador = new HashMap<>();
+                            infoUtilizador.put("nome", nameT);
+                            infoUtilizador.put("status", "Change your status!");
+                            infoUtilizador.put("img", "default");
+                            infoUtilizador.put("imgpeq", "default");
+
+                            //por fim colocamos o nosso HashMap na DB e se for bem sucedido, passamos para o intent do utilizador
+                            db.setValue(infoUtilizador).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    Intent mainIntent = new Intent(SignUpActivity.this, MainActivity.class);
+                                    //linha para garantir que o utilizador depois do registo não volte atrás para uma activity
+                                    //fora da zona do utilizador (welcome page ou login/registo)
+                                    mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(mainIntent);
+                                    finish();
+                                }
+                            });
+
+
                         } else {
                             Toast.makeText(SignUpActivity.this, "Cannot Sign in. Please check the form and try again.", Toast.LENGTH_LONG).show();
                         }

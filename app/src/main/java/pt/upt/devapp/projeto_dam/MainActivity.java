@@ -1,6 +1,9 @@
 package pt.upt.devapp.projeto_dam;
 
 import android.content.Intent;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,6 +16,9 @@ import com.google.firebase.auth.FirebaseUser;
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
+    private ViewPager vp;
+    private PageAdapter pageAdapter;
+    private TabLayout tabs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +26,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
+
+        //buscar as nossas Pages e preenche-las com os 3 fragmentos (Chat, Requests e Friends)
+        vp = (ViewPager) findViewById(R.id.pages);
+        pageAdapter = new PageAdapter(getSupportFragmentManager());
+        vp.setAdapter(pageAdapter);
+
+        //pegar nas tabs e colocar as pages correspondentes
+        tabs = (TabLayout) findViewById(R.id.tabs);
+        tabs.setupWithViewPager(vp);
     }
 
     @Override
