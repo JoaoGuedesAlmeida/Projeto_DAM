@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AccountSettings">
+    tools:context=".ProfileActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,37 +12,36 @@
         android:orientation="vertical">
 
         <ImageView
-            android:id="@+id/as_img"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_gravity="center"
-            app:srcCompat="@drawable/common_google_signin_btn_icon_light_normal" />
+            android:id="@+id/profile_img"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/common_google_signin_btn_icon_dark" />
 
         <TextView
-            android:id="@+id/as_name"
+            android:id="@+id/profile_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="nome aqui" />
+            android:text="TextView" />
 
         <TextView
-            android:id="@+id/as_status"
+            android:id="@+id/profile_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="changeImg"
-            android:text="status aqui" />
+            android:text="TextView" />
+
+        <TextView
+            android:id="@+id/profile_friends"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TextView" />
 
         <Button
-            android:id="@+id/as_avatar_btn"
+            android:id="@+id/profile_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="changeImg"
-            android:text="Change avatar" />
+            android:onClick="pedidoFriend"
+            android:text="Button" />
 
-        <Button
-            android:id="@+id/as_status_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="changeStatus"
-            android:text="Change status" />
     </LinearLayout>
+
 </android.support.constraint.ConstraintLayout>

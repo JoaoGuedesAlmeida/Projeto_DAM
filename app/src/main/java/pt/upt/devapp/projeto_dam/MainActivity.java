@@ -70,6 +70,16 @@ public class MainActivity extends AppCompatActivity {
             mAuth.signOut();
             sair();
         }
+
+        if(item.getItemId() == R.id.accset_btn){
+            Intent intent = new Intent(MainActivity.this, AccountSettings.class);
+            startActivity(intent);
+        }
+
+        if(item.getItemId() == R.id.users_btn){
+            Intent intent = new Intent(MainActivity.this, SearchUsers.class);
+            startActivity(intent);
+        }
         return true;
     }
 
