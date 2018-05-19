@@ -12,6 +12,8 @@ import android.view.View;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,12 +22,20 @@ public class MainActivity extends AppCompatActivity {
     private PageAdapter pageAdapter;
     private TabLayout tabs;
 
+    private DatabaseReference db_users;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         mAuth = FirebaseAuth.getInstance();
+        if(mAuth.getCurrentUser() != null){
+            //buscar o utilizador logged
+            db_users = FirebaseDatabase.getInstance().getReference().child("Utilizadores").child(mAuth.getCurrentUser().getUid());
+        }
+        db_users.child("online").setValue(true);
 
         //buscar as nossas Pages e preenche-las com os 3 fragmentos (Chat, Requests e Friends)
         vp = (ViewPager) findViewById(R.id.pages);
@@ -46,10 +56,31 @@ public class MainActivity extends AppCompatActivity {
         // se não está logged in, troca para a activity de log in/registo
         if (currentUser == null){
             sair();
+        } else{ //está online
+            db_users.child("online").setValue(true);
         }
     }
 
+    @Override
+    protected void onStop() { //quando sai da app tira de online
+        super.onStop();
+        FirebaseUser current = mAuth.getCurrentUser();
+        if(current != null){
+            db_users.child("online").setValue(false);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        FirebaseUser current = mAuth.getCurrentUser();
+        if(current != null){
+            db_users.child("online").setValue(true);
+        };
+    }
+
     private void sair() {
+        db_users.child("online").setValue(false);
         Intent startIntent = new Intent(MainActivity.this, WelcomeActivity.class);
         startActivity(startIntent);
         finish();

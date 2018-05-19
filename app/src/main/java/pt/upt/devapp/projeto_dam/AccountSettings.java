@@ -49,6 +49,8 @@ public class AccountSettings extends AppCompatActivity {
     private TextView as_nome;
     private TextView as_status;
 
+    private FirebaseAuth mAuth;
+
     private StorageReference storage;
 
     private static final int escolha=1;
@@ -62,14 +64,19 @@ public class AccountSettings extends AppCompatActivity {
         as_nome = (TextView) findViewById(R.id.as_name);
         as_status = (TextView) findViewById(R.id.as_status);
 
+        mAuth = FirebaseAuth.getInstance();
+
         utilizador = FirebaseAuth.getInstance().getCurrentUser();
+
+        //pasta onde são guardadas as imagens
         storage = FirebaseStorage.getInstance().getReference();
 
+        //id do utilizador logged in
         String user_id = utilizador.getUid();
 
         //buscar o nosso utilizador logged à DB
         db = FirebaseDatabase.getInstance().getReference().child("Utilizadores").child(user_id);
-
+        db.child("online").setValue(true);
         //buscar as informações sobre o utilizador à db e colocar no perfil do mesmo
         db.addValueEventListener(new ValueEventListener() {
             @Override
@@ -125,14 +132,15 @@ public class AccountSettings extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
 
-                //se a escolha da imagem for bem sucedida, vamos guardar a imagem na nossa storaga da Firebase
+                //se a escolha da imagem for bem sucedida, vamos guardar a imagem na nossa storage da Firebase
                 String user_id = utilizador.getUid(); //para gravar a imagem com o id do utilizador
                 Uri resultUri = result.getUri();
 
-                //comprimir a imagem
+                //comprimir a imagem num Bitmap para obter um loading mais rapido quando carregamos as imagens
                 File thumb = new File(resultUri.getPath());
                 Bitmap thumb_bit = null;
                 try {
+                    //lib usada para Comprimir as imagens: https://github.com/zetbaitsu/Compressor
                     thumb_bit = new Compressor(this).compressToBitmap(thumb);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -143,6 +151,7 @@ public class AccountSettings extends AppCompatActivity {
                 thumb_bit.compress(Bitmap.CompressFormat.JPEG,100,baos);
                 final byte[] thumb_byte = baos.toByteArray();
 
+                //buscar a pasta onde vão ser guardada a imagem original e a imagem bitmap comprimida
                 StorageReference nomePasta = storage.child("Imagens").child(user_id +".jpg");
                 final StorageReference thumbPasta = storage.child("Imagens").child("thumbs").child(user_id+".jpg");
 
@@ -150,8 +159,8 @@ public class AccountSettings extends AppCompatActivity {
                 nomePasta.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        if(task.isSuccessful()){
-                            //gravar o link da imagem como atributo "img" do utilizador atual
+                        if(task.isSuccessful()){ //se a imagem original foi guardada com sucesso na Firebase
+                            //vai buscar o link de download da imagem para mais tarde colocar na DB
                             final String url_imagem = task.getResult().getDownloadUrl().toString();
 
                             //upload do bitmap
@@ -160,12 +169,16 @@ public class AccountSettings extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> thumb_task) {
 
+                                    //vai buscar o link de download da imagem comprimida bitmap
                                     String url_thumb = thumb_task.getResult().getDownloadUrl().toString();
 
-                                    if(thumb_task.isSuccessful()){
+                                    if(thumb_task.isSuccessful()){ //se o bitmap for colocado com sucesso
+                                        //vamos ao nosso utilizador na DB e atualizamos os atributos img e imgpeq para os links que guardamos em cima
                                         Map update_hash = new HashMap();
                                         update_hash.put("img",url_imagem);
                                         update_hash.put("imgpeq", url_thumb);
+
+                                        //finalmente vamos à base de dados atualizar os campos
                                         db.updateChildren(update_hash).addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
@@ -189,5 +202,15 @@ public class AccountSettings extends AppCompatActivity {
                 Exception error = result.getError();
             }
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        /*FirebaseUser current = mAuth.getCurrentUser();
+        if(current != null){
+            db.child("online").setValue(false);
+        }*/
+
     }
 }

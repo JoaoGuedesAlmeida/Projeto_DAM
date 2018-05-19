@@ -11,15 +11,20 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class LoginActivity extends AppCompatActivity {
 
     private TextInputLayout loginEmail;
     private TextInputLayout loginPassword;
     private FirebaseAuth mAuth;
+    private DatabaseReference utilizadores;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +32,8 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
+
+        utilizadores = FirebaseDatabase.getInstance().getReference().child("Utilizadores");
     }
 
     // classe para verificar se os dados do login estão corretos
@@ -49,14 +56,26 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()){
-                    Intent mainIntent = new Intent(LoginActivity.this, MainActivity.class);
-                    //linha para garantir que o utilizador depois do login não volte atrás para uma activity
-                    //fora da zona do utilizador (welcome page ou login/registo)
-                    mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(mainIntent);
-                    finish();
+
+                    String user_id = mAuth.getCurrentUser().getUid();
+
+                    String token = FirebaseInstanceId.getInstance().getToken();
+
+                    utilizadores.child(user_id).child("token").setValue(token).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Intent mainIntent = new Intent(LoginActivity.this, MainActivity.class);
+                            //linha para garantir que o utilizador depois do login não volte atrás para uma activity
+                            //fora da zona do utilizador (welcome page ou login/registo)
+                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(mainIntent);
+                            finish();
+                        }
+                    });
+
+
                 } else {
-                    Toast.makeText(LoginActivity.this, "Cannot Log in. Please check the form and try again.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(LoginActivity.this, "Email or Password is incorrect", Toast.LENGTH_LONG).show();
                 }
             }
         });

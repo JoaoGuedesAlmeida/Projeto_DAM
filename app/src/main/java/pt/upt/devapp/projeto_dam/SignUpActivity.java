@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.HashMap;
 
@@ -64,6 +65,7 @@ public class SignUpActivity extends AppCompatActivity {
                             //temos que ir buscar o id do utilizador para guardar na nossa DB os dados do mesmo
                             FirebaseUser utilizador = FirebaseAuth.getInstance().getCurrentUser();
                             String user_id = utilizador.getUid();
+                            String token = FirebaseInstanceId.getInstance().getToken();
 
                             //vamos buscar à nossa db dentro dos utilizadores o id do nosso utilizador que fomos buscar em cima
                             db = FirebaseDatabase.getInstance().getReference().child("Utilizadores").child(user_id);
@@ -74,6 +76,7 @@ public class SignUpActivity extends AppCompatActivity {
                             infoUtilizador.put("status", "Change your status!");
                             infoUtilizador.put("img", "default");
                             infoUtilizador.put("imgpeq", "default");
+                            infoUtilizador.put("token",token);
 
                             //por fim colocamos o nosso HashMap na DB e se for bem sucedido, passamos para o intent do utilizador
                             db.setValue(infoUtilizador).addOnCompleteListener(new OnCompleteListener<Void>() {

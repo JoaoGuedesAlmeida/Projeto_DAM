@@ -40,7 +40,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="pedidoFriend"
-            android:text="Button" />
+            android:text="Send Friend Request" />
+
+        <Button
+            android:id="@+id/profile_btn2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="decline"
+            android:text="Decline friend request" />
 
     </LinearLayout>
 

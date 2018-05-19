@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
@@ -19,13 +21,18 @@ public class SearchUsers extends AppCompatActivity {
 
     private RecyclerView lista_utilizadores;
     private DatabaseReference db;
+    private DatabaseReference db_users;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_users);
 
+        mAuth = FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance().getReference().child("Utilizadores");
+        db_users = FirebaseDatabase.getInstance().getReference().child("Utilizadores").child(mAuth.getCurrentUser().getUid());
+
 
         lista_utilizadores = (RecyclerView) findViewById(R.id.lista_utilizadores);
         lista_utilizadores.setLayoutManager(new LinearLayoutManager(this));
@@ -34,6 +41,7 @@ public class SearchUsers extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        db_users.child("online").setValue(true);
         FirebaseRecyclerAdapter<Utilizador, UsersViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Utilizador, UsersViewHolder>(Utilizador.class,R.layout.user_item, UsersViewHolder.class, db) {
             @Override
             protected void populateViewHolder(UsersViewHolder viewHolder, Utilizador model, int position) {
@@ -90,5 +98,14 @@ public class SearchUsers extends AppCompatActivity {
                 Picasso.get().load(imgpeq).into(imgView);
             }
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();/*
+        FirebaseUser current = mAuth.getCurrentUser();
+        if(current != null){
+            db_users.child("online").setValue(false);
+        }*/
     }
 }
